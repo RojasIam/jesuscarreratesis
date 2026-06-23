@@ -1,122 +1,127 @@
-# Optical Quality - Medición y Reportes (App Móvil)
+# Optical Quality - Web App (Next.js)
 
-Aplicación móvil React Native diseñada para calcular y reportar el estado de las mediciones en cajas de energía.
+Aplicación web profesional para calcular y reportar mediciones de calidad óptica.
+
+## Stack
+
+- **Next.js 15** — App Router, SSR/SSG
+- **React 19** — UI
+- **TypeScript** — Tipado estático
+- **Tailwind CSS** — Estilos utility-first
+- **Lucide React** — Iconos
+- **Supabase** — Base de datos
+- **Cloudinary** — Almacenamiento de archivos
+
+## Variables de entorno
+
+Copia `.env.example` a `.env.local` y pega tus credenciales:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Dónde obtenerla | Uso |
+|----------|-----------------|-----|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API | Cliente + servidor |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → anon public | Cliente + servidor |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → service_role | **Solo servidor** |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary → Account Details | Servidor |
+| `CLOUDINARY_API_KEY` | Cloudinary → API Key | **Solo servidor** |
+| `CLOUDINARY_API_SECRET` | Cloudinary → API Secret | **Solo servidor** |
 
 ## Características
 
-- Sistema de autenticación simple con correo electrónico y contraseña
-- Formulario completo para captura de datos de medición
-- Cálculo automático de pérdida óptica máxima permitida (IL_MAX)
-- Evaluación automática del estado de la medición
-- Indicadores visuales de color según los valores ingresados
-- Interfaz optimizada para dispositivos móviles
+- Interfaz tipo app (responsive + PWA instalable)
+- Login con persistencia de sesión
+- Formulario de medición con cálculos en tiempo real
+- Modo claro / oscuro
+- Sidebar en desktop, drawer en móvil
 
-## Requisitos
+## Configuración Supabase (obligatorio)
 
-- Node.js 18+
-- npm o yarn
-- Expo CLI instalado globalmente: `npm install -g expo-cli`
-- Para desarrollo móvil:
-  - iOS: Xcode (solo macOS)
-  - Android: Android Studio
-
-## Instalación
-
-1. Instalar las dependencias:
-```bash
-npm install
-```
-
-2. Iniciar el servidor de desarrollo:
-```bash
-npm start
-```
-
-3. Opciones para ejecutar:
-   - Escanear QR con Expo Go (iOS/Android)
-   - Presionar `i` para iOS Simulator (solo macOS)
-   - Presionar `a` para Android Emulator
-   - Presionar `w` para web
-
-## Estructura del Proyecto
-
-```
-optical_quality/
-├── src/
-│   ├── screens/              # Pantallas de la aplicación
-│   │   ├── LoginScreen.tsx
-│   │   ├── DashboardHomeScreen.tsx
-│   │   ├── FormularioMedicionScreen.tsx
-│   │   └── FormulasScreen.tsx
-│   ├── components/           # Componentes reutilizables
-│   │   ├── Sidebar.tsx
-│   │   ├── ProfileDropdown.tsx
-│   │   └── CustomPicker.tsx
-│   ├── context/              # Contextos de React
-│   │   ├── AuthContext.tsx
-│   │   └── ThemeContext.tsx
-│   ├── styles/               # Estilos y temas
-│   │   ├── themeColors.ts
-│   │   └── getThemedStyles.ts
-│   ├── logo/                 # Logo de la aplicación
-│   │   └── logoopticalquality.png
-│   ├── types.ts              # Definiciones de tipos TypeScript
-│   └── utils/                # Utilidades
-│       └── calculations.ts
-├── App.tsx                    # Componente principal
-├── app.json                   # Configuración de Expo
-├── package.json
-└── tsconfig.json
-```
-
-## Uso
-
-### Login
-
-El sistema utiliza un sistema de autenticación simple. Cualquier correo electrónico y contraseña válidos permitirán el acceso.
-
-### Formulario de Medición
-
-El formulario se divide en 4 secciones:
-
-1. **Datos generales**: Información básica de la medición
-2. **Parámetros de medición**: Valores técnicos de la medición
-3. **Indicadores de calidad**: Métricas de calidad óptica
-4. **Resultados calculados**: Valores calculados automáticamente
-
-### Cálculos Automáticos
-
-- **IL_MAX**: Se calcula automáticamente según la fórmula especificada
-- **Estado**: Se evalúa automáticamente basado en IL_REAL e IL_MAX
-
-### Indicadores de Color
-
-Los campos cambian de color según los valores ingresados:
-
-- **Verde**: Valores óptimos
-- **Amarillo**: Valores aceptables pero con advertencia
-- **Rojo**: Valores no conformes
-
-## Scripts Disponibles
-
-- `npm start`: Inicia el servidor de desarrollo de Expo
-- `npm run android`: Inicia en Android
-- `npm run ios`: Inicia en iOS (solo macOS)
-- `npm run web`: Inicia en navegador web
-
-## Tecnologías Utilizadas
-
-- React Native
-- Expo
-- TypeScript
-- React Navigation
-- AsyncStorage (para persistencia de autenticación y tema)
-- React Native Safe Area Context
+1. En **Supabase → SQL Editor**, ejecuta el contenido de [`supabase/schema.sql`](supabase/schema.sql).
+2. En **Authentication → Users**, crea un usuario (email + contraseña) para iniciar sesión.
+3. Verifica la conexión: con la app en marcha, abre `/api/health`.
 
 ## Desarrollo
 
-Esta aplicación está construida con Expo, lo que permite desarrollo rápido y fácil despliegue. Para más información sobre Expo, visita [expo.dev](https://expo.dev).
+```bash
+npm install
+cp .env.example .env.local   # pegar credenciales Supabase + Cloudinary
+npm run dev
+```
+
+Abre [http://localhost:3000](http://localhost:3000)
+
+## Producción
+
+```bash
+npm run build
+npm run start
+```
+
+Despliegue recomendado en **Vercel** (creadores de Next.js).
+
+## Despliegue en GitHub + Vercel
+
+Repositorio: [github.com/RojasIam/jesuscarreratesis](https://github.com/RojasIam/jesuscarreratesis)
+
+### 1. Subir el código a GitHub
+
+```bash
+git remote add origin https://github.com/RojasIam/jesuscarreratesis.git
+git add .
+git commit -m "Migración a Next.js 15 — Optical Quality web app"
+git push -u origin master
+```
+
+Si GitHub usa `main` como rama por defecto:
+
+```bash
+git branch -M main
+git push -u origin main
+```
+
+### 2. Conectar Vercel (despliegue automático)
+
+1. Entra en [vercel.com](https://vercel.com) e inicia sesión con tu cuenta de GitHub.
+2. **Add New → Project** → importa `RojasIam/jesuscarreratesis`.
+3. Vercel detecta **Next.js** automáticamente. No cambies el build command (`npm run build`).
+4. En **Environment Variables**, añade las mismas variables que en `.env.local`:
+
+   | Variable | Entornos |
+   |----------|----------|
+   | `NEXT_PUBLIC_SUPABASE_URL` | Production, Preview, Development |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production, Preview, Development |
+   | `SUPABASE_SERVICE_ROLE_KEY` | Production, Preview, Development |
+   | `CLOUDINARY_CLOUD_NAME` | Production, Preview, Development |
+   | `CLOUDINARY_API_KEY` | Production, Preview, Development |
+   | `CLOUDINARY_API_SECRET` | Production, Preview, Development |
+
+5. Pulsa **Deploy**. Cada `git push` a la rama conectada volverá a desplegar automáticamente.
+
+### 3. Supabase en producción
+
+En **Supabase → Authentication → URL Configuration**, añade la URL de Vercel (ej. `https://tu-proyecto.vercel.app`) en **Site URL** y **Redirect URLs**.
+
+Si la base de datos ya existía antes del perfil con avatar, ejecuta también [`supabase/migrations/20250621000000_profile_avatar.sql`](supabase/migrations/20250621000000_profile_avatar.sql).
+
+### 4. Verificar despliegue
+
+Tras el deploy, abre `https://tu-dominio.vercel.app/api/health` — debe responder JSON con estado de Supabase y Cloudinary.
+
+## Estructura
+
+```
+src/
+├── app/              # Rutas Next.js (App Router)
+│   ├── login/
+│   └── (dashboard)/  # Rutas protegidas
+├── components/       # UI reutilizable
+├── context/          # Auth, Theme
+└── lib/              # types, calculations
+```
 
 ## Licencia
 
-Este proyecto es de uso interno.
+Uso interno.
