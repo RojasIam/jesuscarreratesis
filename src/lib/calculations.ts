@@ -1,17 +1,17 @@
 import { MedicionFormData, BAND_CONFIGS } from '@/lib/types';
 
+/** Margen de seguridad (M) fijo según especificación técnica */
+export const MARGEN_SEGURIDAD = 1;
+
+/**
+ * Pérdida óptica máxima permitida (dB):
+ * IL_MAX = (L × α) + (Ne × Pe) + (Nc × Pc) + M
+ */
 export function calculateILMax(formData: MedicionFormData): number | null {
-  const {
-    tipoBanda,
-    potenciaSiteNodo,
-    distanciaEnlace,
-    numeroEmpalmes,
-    numeroConectores,
-  } = formData;
+  const { tipoBanda, distanciaEnlace, numeroEmpalmes, numeroConectores } = formData;
 
   if (
     tipoBanda &&
-    potenciaSiteNodo !== '' &&
     distanciaEnlace !== '' &&
     numeroEmpalmes !== '' &&
     numeroConectores !== ''
@@ -19,21 +19,37 @@ export function calculateILMax(formData: MedicionFormData): number | null {
     const config = BAND_CONFIGS[tipoBanda];
     if (!config) return null;
 
-    const potencia = Number(potenciaSiteNodo);
     const distancia = Number(distanciaEnlace);
     const empalmes = Number(numeroEmpalmes);
     const conectores = Number(numeroConectores);
 
     return (
-      potencia -
-      config.atenuacionTipica * distancia -
-      empalmes * config.perdidaEmpalme -
-      conectores * config.perdidaConector -
-      1
+      config.atenuacionTipica * distancia +
+      empalmes * config.perdidaEmpalme +
+      conectores * config.perdidaConector +
+      MARGEN_SEGURIDAD
     );
   }
 
   return null;
+}
+
+/**
+ * Pérdida óptica real medida (dB):
+ * IL_REAL = |Potencia TX − Potencia RX|
+ */
+export function calculateILReal(
+  potenciaTx: number | string | '',
+  potenciaRx: number | string | ''
+): number | null {
+  if (potenciaTx === '' || potenciaRx === '') return null;
+
+  const ptx = Number(potenciaTx);
+  const prx = Number(potenciaRx);
+
+  if (isNaN(ptx) || isNaN(prx)) return null;
+
+  return Math.abs(ptx - prx);
 }
 
 export function evaluateStatus(ilReal: number, ilMax: number): {

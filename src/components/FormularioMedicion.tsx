@@ -9,6 +9,7 @@ import { BoltIcon, PieChartIcon, CheckCircleIcon } from '@/icons';
 import { MedicionFormData, DEPARTAMENTOS_PERU } from '@/lib/types';
 import {
   calculateILMax,
+  calculateILReal,
   evaluateStatus,
   getPowerColors,
   getEmpalmeColors,
@@ -74,6 +75,7 @@ export default function FormularioMedicion({
 }) {
   const [formData, setFormData] = useState<MedicionFormData>(initialFormData);
   const [ilMax, setIlMax] = useState<number | null>(null);
+  const [ilReal, setIlReal] = useState<number | null>(null);
   const [estado, setEstado] = useState<ReturnType<typeof evaluateStatus> | null>(null);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -109,9 +111,14 @@ export default function FormularioMedicion({
     const calculatedILMax = calculateILMax(formDataForCalc);
     setIlMax(calculatedILMax);
 
-    if (calculatedILMax !== null && formDataForCalc.potenciaRecibidaRoseta !== '') {
-      const ilReal = Number(formDataForCalc.potenciaRecibidaRoseta);
-      setEstado(evaluateStatus(ilReal, calculatedILMax));
+    const calculatedILReal = calculateILReal(
+      formDataForCalc.potenciaSiteNodo,
+      formDataForCalc.potenciaRecibidaRoseta
+    );
+    setIlReal(calculatedILReal);
+
+    if (calculatedILMax !== null && calculatedILReal !== null) {
+      setEstado(evaluateStatus(calculatedILReal, calculatedILMax));
     } else {
       setEstado(null);
     }
@@ -168,9 +175,6 @@ export default function FormularioMedicion({
         adjuntoPublicId = uploadJson.publicId;
       }
 
-      const ilReal =
-        formData.potenciaRecibidaRoseta !== '' ? Number(formData.potenciaRecibidaRoseta) : null;
-
       const res = await fetch('/api/mediciones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -225,7 +229,7 @@ export default function FormularioMedicion({
         </div>
       )}
 
-      {(ilMax !== null || formData.potenciaRecibidaRoseta || estado) && (
+      {(ilMax !== null || ilReal !== null || estado) && (
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-6">
           {ilMax !== null && (
             <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
@@ -233,22 +237,22 @@ export default function FormularioMedicion({
                 <BoltIcon className="size-6 text-gray-800 dark:text-white/90" />
               </div>
               <div className="mt-5">
-                <span className="text-sm text-gray-500 dark:text-gray-400">IL_MAX (dBm)</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">IL_MAX (dB)</span>
                 <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
                   {ilMax.toFixed(1)}
                 </h4>
               </div>
             </div>
           )}
-          {formData.potenciaRecibidaRoseta && (
+          {ilReal !== null && (
             <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
                 <PieChartIcon className="size-6 text-gray-800 dark:text-white/90" />
               </div>
               <div className="mt-5">
-                <span className="text-sm text-gray-500 dark:text-gray-400">IL_REAL (dBm)</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">IL_REAL (dB)</span>
                 <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                  {String(formData.potenciaRecibidaRoseta)}
+                  {ilReal.toFixed(2)}
                 </h4>
               </div>
             </div>
@@ -355,7 +359,7 @@ export default function FormularioMedicion({
                 <option value="1550">1550</option>
               </select>
             </Field>
-            <Field label="Potencia Site - Nodo (dBm) *">
+            <Field label="Potencia Site - Nodo / TX (dBm) *">
               <input
                 className="input-field"
                 style={fieldStyle('potenciaSiteNodo', formData.potenciaSiteNodo)}
@@ -392,12 +396,12 @@ export default function FormularioMedicion({
                 inputMode="decimal"
               />
             </Field>
-            <Field label="Potencia recibida IL_REAL (dBm) *">
+            <Field label="Potencia recibida en la roseta / RX (dBm) *">
               <input
                 className="input-field"
                 value={formData.potenciaRecibidaRoseta === '' ? '' : String(formData.potenciaRecibidaRoseta)}
                 onChange={(e) => handleChange('potenciaRecibidaRoseta', e.target.value)}
-                placeholder="Decimal (puede ser negativo)"
+                placeholder="Ej: -13.20"
                 inputMode="decimal"
               />
             </Field>
@@ -440,10 +444,15 @@ export default function FormularioMedicion({
         </ComponentCard>
 
         <ComponentCard title="4. Resultados calculados">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="IL_MAX (dBm)">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="IL_MAX (dB)">
               <div className="input-field bg-gray-50 font-mono dark:bg-white/[0.03]">
                 {ilMax !== null ? ilMax.toFixed(2) : '---'}
+              </div>
+            </Field>
+            <Field label="IL_REAL (dB)">
+              <div className="input-field bg-gray-50 font-mono dark:bg-white/[0.03]">
+                {ilReal !== null ? ilReal.toFixed(2) : '---'}
               </div>
             </Field>
             <Field label="Estado de la medición">

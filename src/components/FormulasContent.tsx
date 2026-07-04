@@ -57,8 +57,23 @@ export default function FormulasContent() {
       <ComponentCard title="Fórmula principal: IL_MAX">
         <div className="rounded-xl border-l-4 border-brand-500 bg-gray-50 p-4 dark:bg-white/[0.03]">
           <p className="font-mono text-sm leading-relaxed text-gray-800 dark:text-gray-200">
-            IL_MAX = Potencia Site-Nodo − (Atenuación × Distancia) − (Empalmes × Pérdida Empalme) −
-            (Conectores × Pérdida Conector) − 1
+            IL_MAX = (L × α) + (Ne × Pe) + (Nc × Pc) + M
+          </p>
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+            L = longitud del enlace (km), Ne = empalmes, Nc = conectores, M = margen (1 dB).
+            α, Pe y Pc dependen del tipo de banda (1310, 1490 o 1550).
+          </p>
+        </div>
+      </ComponentCard>
+
+      <ComponentCard title="Pérdida óptica real: IL_REAL">
+        <div className="rounded-xl border-l-4 border-brand-500 bg-gray-50 p-4 dark:bg-white/[0.03]">
+          <p className="font-mono text-sm leading-relaxed text-gray-800 dark:text-gray-200">
+            IL_REAL = |Potencia TX − Potencia RX|
+          </p>
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+            Se usa valor absoluto porque las potencias en dBm suelen ser negativas; el resultado
+            se expresa en dB (pérdida).
           </p>
         </div>
       </ComponentCard>
