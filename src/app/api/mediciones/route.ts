@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { formDataToDbRow, type MedicionPayload } from '@/lib/database';
 import { canCreateMedicion } from '@/lib/roles';
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -13,7 +13,11 @@ export async function GET() {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   }
 
-  const { data, error } = await supabase
+  const { searchParams } = new URL(request.url);
+  const mesParam = searchParams.get('mes');
+  const anioParam = searchParams.get('anio');
+
+  let query = supabase
     .from('mediciones')
     .select(`
       *,
@@ -23,8 +27,21 @@ export async function GET() {
         role
       )
     `)
-    .order('created_at', { ascending: false })
-    .limit(50);
+    .order('created_at', { ascending: false });
+
+  if (mesParam && anioParam) {
+    const mes = Number(mesParam);
+    const anio = Number(anioParam);
+    if (mes >= 1 && mes <= 12 && anio >= 2000) {
+      const start = new Date(anio, mes - 1, 1).toISOString();
+      const end = new Date(anio, mes, 1).toISOString();
+      query = query.gte('created_at', start).lt('created_at', end);
+    }
+  } else {
+    query = query.limit(50);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -97,6 +114,15 @@ export async function POST(request: Request) {
         {
           error:
             'La tabla mediciones no existe. Ejecuta supabase/schema.sql en el SQL Editor de Supabase.',
+        },
+        { status: 503 },
+      );
+    }
+    if (error.code === '42703') {
+      return NextResponse.json(
+        {
+          error:
+            'Faltan columnas de evidencias en mediciones. Ejecuta supabase/migrations/20250705000000_mediciones_evidencias.sql en Supabase.',
         },
         { status: 503 },
       );

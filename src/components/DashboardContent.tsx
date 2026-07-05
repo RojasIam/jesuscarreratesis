@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Badge from '@/components/ui/badge/Badge';
 import { GroupIcon, BoltIcon, TableIcon, DocsIcon } from '@/icons';
 import MedicionesRecientes from '@/components/MedicionesRecientes';
+import MedicionesDashboardCharts from '@/components/MedicionesDashboardCharts';
 import { useAuth } from '@/context/AuthContext';
 import { canCreateMedicion, canViewAllMediciones, ROLE_LABELS } from '@/lib/roles';
 
@@ -17,23 +18,30 @@ function getGreeting() {
 
 export default function DashboardContent() {
   const { role, profile } = useAuth();
+  const isAdmin = role === 'admin';
   const showMedicion = canCreateMedicion(role);
   const [totalMediciones, setTotalMediciones] = useState<number | null>(null);
 
   useEffect(() => {
+    if (isAdmin) return;
+
     fetch('/api/mediciones')
       .then((r) => r.json())
       .then((d) => setTotalMediciones(d.mediciones?.length ?? 0))
       .catch(() => setTotalMediciones(0));
-  }, []);
+  }, [isAdmin]);
 
   const firstName = profile?.full_name?.split(' ')[0] ?? 'Usuario';
+
+  if (isAdmin) {
+    return <MedicionesDashboardCharts />;
+  }
 
   return (
     <div className="grid grid-cols-12 gap-4 md:gap-6">
       <div className="col-span-12 space-y-6 xl:col-span-7">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+          <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
               <GroupIcon className="size-6 text-gray-800 dark:text-white/90" />
             </div>
@@ -50,7 +58,7 @@ export default function DashboardContent() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+          <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
               <BoltIcon className="size-6 text-gray-800 dark:text-white/90" />
             </div>
@@ -70,7 +78,7 @@ export default function DashboardContent() {
           {showMedicion && (
             <Link
               href="/medicion"
-              className="rounded-2xl border border-gray-200 bg-white p-5 transition hover:border-brand-500/30 dark:border-gray-800 dark:bg-white/[0.03] md:p-6"
+              className="rounded-xl border border-gray-200 bg-white p-5 transition hover:border-brand-500/30 dark:border-gray-800 dark:bg-white/[0.03] md:p-6"
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
                 <TableIcon className="size-6 text-gray-800 dark:text-white/90" />
@@ -85,7 +93,7 @@ export default function DashboardContent() {
           )}
           <Link
             href="/formulas"
-            className="rounded-2xl border border-gray-200 bg-white p-5 transition hover:border-brand-500/30 dark:border-gray-800 dark:bg-white/[0.03] md:p-6"
+            className="rounded-xl border border-gray-200 bg-white p-5 transition hover:border-brand-500/30 dark:border-gray-800 dark:bg-white/[0.03] md:p-6"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
               <DocsIcon className="size-6 text-gray-800 dark:text-white/90" />
@@ -101,7 +109,7 @@ export default function DashboardContent() {
       </div>
 
       <div className="col-span-12 xl:col-span-5">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
           <div className="mb-6 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Bienvenido</h3>
             {role && <Badge color="primary">{ROLE_LABELS[role]}</Badge>}

@@ -1,0 +1,9 @@
+-- Evidencias técnicas: 3 fotos + coordenadas GPS por medición
+alter table public.mediciones add column if not exists latitud numeric;
+alter table public.mediciones add column if not exists longitud numeric;
+alter table public.mediciones add column if not exists foto_timestamp_url text;
+alter table public.mediciones add column if not exists foto_timestamp_public_id text;
+alter table public.mediciones add column if not exists foto_otdr_url text;
+alter table public.mediciones add column if not exists foto_otdr_public_id text;
+alter table public.mediciones add column if not exists foto_potencia_url text;
+alter table public.mediciones add column if not exists foto_potencia_public_id text;

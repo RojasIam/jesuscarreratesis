@@ -1,11 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { translateUserMessage } from '@/lib/user-messages';
 import ComponentCard from '@/components/common/ComponentCard';
 import Label from '@/components/form/Label';
 import Button from '@/components/ui/button/Button';
 import Badge from '@/components/ui/badge/Badge';
+import EvidenciasSection, {
+  initialEvidenciasFiles,
+  type EvidenciasFiles,
+} from '@/components/EvidenciasSection';
 import { BoltIcon, PieChartIcon, CheckCircleIcon } from '@/icons';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { uploadFile } from '@/lib/upload-client';
 import { MedicionFormData, DEPARTAMENTOS_PERU } from '@/lib/types';
 import {
   calculateILMax,
@@ -80,7 +87,14 @@ export default function FormularioMedicion({
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
-  const [adjunto, setAdjunto] = useState<File | null>(null);
+  const [evidenciasFiles, setEvidenciasFiles] = useState<EvidenciasFiles>(initialEvidenciasFiles);
+  const {
+    coords,
+    status: geoStatus,
+    errorMessage: geoError,
+    requestLocation,
+    isLoading: geoLoading,
+  } = useGeolocation(true);
 
   useEffect(() => {
     const parsedNumeroEmpalmes: number | '' =
@@ -160,20 +174,19 @@ export default function FormularioMedicion({
     setSaving(true);
 
     try {
-      let adjuntoUrl: string | null = null;
-      let adjuntoPublicId: string | null = null;
+      const uploadFolder = 'optical-quality/mediciones';
 
-      if (adjunto) {
-        const uploadData = new FormData();
-        uploadData.append('file', adjunto);
-        const uploadRes = await fetch('/api/upload', { method: 'POST', body: uploadData });
-        const uploadJson = await uploadRes.json();
-        if (!uploadRes.ok) {
-          throw new Error(uploadJson.error ?? 'Error al subir adjunto');
-        }
-        adjuntoUrl = uploadJson.url;
-        adjuntoPublicId = uploadJson.publicId;
-      }
+      const [timestampUp, otdrUp, potenciaUp] = await Promise.all([
+        evidenciasFiles.fotoTimestamp
+          ? uploadFile(evidenciasFiles.fotoTimestamp, `${uploadFolder}/timestamp`)
+          : Promise.resolve(null),
+        evidenciasFiles.fotoOtdr
+          ? uploadFile(evidenciasFiles.fotoOtdr, `${uploadFolder}/otdr`)
+          : Promise.resolve(null),
+        evidenciasFiles.fotoPotencia
+          ? uploadFile(evidenciasFiles.fotoPotencia, `${uploadFolder}/potencia`)
+          : Promise.resolve(null),
+      ]);
 
       const res = await fetch('/api/mediciones', {
         method: 'POST',
@@ -183,8 +196,16 @@ export default function FormularioMedicion({
           ilMax,
           ilReal,
           estado: estado?.estado ?? null,
-          adjuntoUrl,
-          adjuntoPublicId,
+          evidencias: {
+            latitud: coords?.lat ?? null,
+            longitud: coords?.lng ?? null,
+            fotoTimestampUrl: timestampUp?.url ?? null,
+            fotoTimestampPublicId: timestampUp?.publicId ?? null,
+            fotoOtdrUrl: otdrUp?.url ?? null,
+            fotoOtdrPublicId: otdrUp?.publicId ?? null,
+            fotoPotenciaUrl: potenciaUp?.url ?? null,
+            fotoPotenciaPublicId: potenciaUp?.publicId ?? null,
+          },
         }),
       });
 
@@ -194,14 +215,14 @@ export default function FormularioMedicion({
       }
 
       setSaved(true);
-      setAdjunto(null);
+      setEvidenciasFiles(initialEvidenciasFiles);
       setFormData(initialFormData);
       onSaved?.();
       if (!embedded) {
         setTimeout(() => setSaved(false), 4000);
       }
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Error al guardar');
+      setSaveError(err instanceof Error ? translateUserMessage(err.message, 'Error al guardar') : 'Error al guardar');
     } finally {
       setSaving(false);
     }
@@ -232,7 +253,7 @@ export default function FormularioMedicion({
       {(ilMax !== null || ilReal !== null || estado) && (
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-6">
           {ilMax !== null && (
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
                 <BoltIcon className="size-6 text-gray-800 dark:text-white/90" />
               </div>
@@ -245,7 +266,7 @@ export default function FormularioMedicion({
             </div>
           )}
           {ilReal !== null && (
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
                 <PieChartIcon className="size-6 text-gray-800 dark:text-white/90" />
               </div>
@@ -258,7 +279,7 @@ export default function FormularioMedicion({
             </div>
           )}
           {estado && (
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
                 <CheckCircleIcon className="size-6 text-gray-800 dark:text-white/90" />
               </div>
@@ -470,20 +491,16 @@ export default function FormularioMedicion({
           </div>
         </ComponentCard>
 
-        <ComponentCard title="5. Adjunto (opcional)">
-          <Field label="Evidencia / reporte (imagen o PDF, máx. 10 MB)">
-            <input
-              type="file"
-              className="input-field file:mr-4 file:rounded-lg file:border-0 file:bg-brand-500 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white file:hover:bg-brand-600"
-              accept="image/*,.pdf"
-              onChange={(e) => setAdjunto(e.target.files?.[0] ?? null)}
-            />
-            {adjunto && (
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                {adjunto.name}
-              </p>
-            )}
-          </Field>
+        <ComponentCard title="5. Evidencias técnicas (opcional)">
+          <EvidenciasSection
+            files={evidenciasFiles}
+            onFilesChange={setEvidenciasFiles}
+            coords={coords}
+            geoStatus={geoStatus}
+            geoError={geoError}
+            onRequestLocation={requestLocation}
+            geoLoading={geoLoading}
+          />
         </ComponentCard>
 
         <Button type="submit" disabled={saving} className="w-full" size="md">
@@ -506,9 +523,17 @@ export default function FormularioMedicion({
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+  className = '',
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div>
+    <div className={className}>
       <Label>{label}</Label>
       {children}
     </div>

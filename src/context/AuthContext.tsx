@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useMemo, use
 import { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import type { UserProfile, UserRole } from '@/lib/roles';
+import { translateUserMessage } from '@/lib/user-messages';
 
 interface LoginResult {
   success: boolean;
@@ -115,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string): Promise<LoginResult> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: translateUserMessage(error.message, 'Credenciales inválidas') };
     }
     return { success: true };
   };

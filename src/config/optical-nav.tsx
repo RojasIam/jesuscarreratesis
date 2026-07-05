@@ -8,11 +8,12 @@ export type OpticalNavItem = {
   path: string;
   icon: React.ReactNode;
   exact?: boolean;
-  roles?: 'all' | 'tecnico';
+  roles?: 'all' | 'tecnico' | 'admin';
 };
 
 export const opticalNavItems: OpticalNavItem[] = [
-  { name: 'Dashboard', shortName: 'Inicio', path: '/', icon: <GridIcon />, exact: true, roles: 'all' },
+  { name: 'Inicio', path: '/', icon: <GridIcon />, exact: true, roles: 'all' },
+  { name: 'Mediciones', shortName: 'Mediciones', path: '/mediciones', icon: <TableIcon />, roles: 'admin' },
   { name: 'Nueva medición', shortName: 'Medición', path: '/medicion', icon: <TableIcon />, roles: 'tecnico' },
   { name: 'Fórmulas', shortName: 'Fórmulas', path: '/formulas', icon: <DocsIcon />, roles: 'all' },
 ];
@@ -20,6 +21,7 @@ export const opticalNavItems: OpticalNavItem[] = [
 export function getNavForRole(role: UserRole | null, canCreate: boolean): OpticalNavItem[] {
   return opticalNavItems.filter((item) => {
     if (item.roles === 'all') return true;
+    if (item.roles === 'admin') return role === 'admin';
     return canCreate;
   });
 }

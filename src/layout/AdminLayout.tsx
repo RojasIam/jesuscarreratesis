@@ -19,9 +19,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen xl:flex">
       <AppSidebar />
       <Backdrop />
-      <div className={`flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>
+      <div className={`min-w-0 flex-1 overflow-x-hidden transition-all duration-300 ease-in-out ${mainContentMargin}`}>
         <AppHeader />
-        <div className="mx-auto max-w-(--breakpoint-2xl) p-4 pb-24 md:p-6 md:pb-24 xl:pb-6">
+        <div className="w-full min-w-0 px-3 py-4 pb-24 md:px-4 md:py-5 md:pb-24 xl:pb-6">
           {children}
         </div>
         <MobileBottomNav />

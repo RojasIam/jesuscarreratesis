@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { translateUserMessage } from '@/lib/user-messages';
 
 export const runtime = 'nodejs';
 
@@ -47,9 +48,12 @@ export async function PATCH(request: Request) {
 
       const { error: passwordError } = await supabase.auth.updateUser({ password });
 
-      if (passwordError) {
-        return NextResponse.json({ error: passwordError.message }, { status: 400 });
-      }
+    if (passwordError) {
+      return NextResponse.json(
+        { error: translateUserMessage(passwordError.message, 'No se pudo actualizar la contraseña') },
+        { status: 400 },
+      );
+    }
     }
 
     const updates: Record<string, string | null> = {

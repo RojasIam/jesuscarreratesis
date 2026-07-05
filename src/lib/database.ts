@@ -23,12 +23,31 @@ export interface MedicionRow {
   estado: string | null;
   adjunto_url: string | null;
   adjunto_public_id: string | null;
+  latitud: number | null;
+  longitud: number | null;
+  foto_timestamp_url: string | null;
+  foto_timestamp_public_id: string | null;
+  foto_otdr_url: string | null;
+  foto_otdr_public_id: string | null;
+  foto_potencia_url: string | null;
+  foto_potencia_public_id: string | null;
   created_at: string;
   profiles?: {
     email: string;
     full_name: string | null;
     role: string;
   } | null;
+}
+
+export interface MedicionEvidencias {
+  latitud: number | null;
+  longitud: number | null;
+  fotoTimestampUrl?: string | null;
+  fotoTimestampPublicId?: string | null;
+  fotoOtdrUrl?: string | null;
+  fotoOtdrPublicId?: string | null;
+  fotoPotenciaUrl?: string | null;
+  fotoPotenciaPublicId?: string | null;
 }
 
 export interface MedicionPayload {
@@ -38,13 +57,14 @@ export interface MedicionPayload {
   estado: string | null;
   adjuntoUrl?: string | null;
   adjuntoPublicId?: string | null;
+  evidencias?: MedicionEvidencias;
 }
 
 export function formDataToDbRow(
   userId: string,
   payload: MedicionPayload,
 ): Omit<MedicionRow, 'id' | 'created_at'> {
-  const { formData, ilMax, ilReal, estado, adjuntoUrl, adjuntoPublicId } = payload;
+  const { formData, ilMax, ilReal, estado, adjuntoUrl, adjuntoPublicId, evidencias } = payload;
 
   return {
     user_id: userId,
@@ -68,6 +88,14 @@ export function formDataToDbRow(
     estado,
     adjunto_url: adjuntoUrl ?? null,
     adjunto_public_id: adjuntoPublicId ?? null,
+    latitud: evidencias?.latitud ?? null,
+    longitud: evidencias?.longitud ?? null,
+    foto_timestamp_url: evidencias?.fotoTimestampUrl ?? null,
+    foto_timestamp_public_id: evidencias?.fotoTimestampPublicId ?? null,
+    foto_otdr_url: evidencias?.fotoOtdrUrl ?? null,
+    foto_otdr_public_id: evidencias?.fotoOtdrPublicId ?? null,
+    foto_potencia_url: evidencias?.fotoPotenciaUrl ?? null,
+    foto_potencia_public_id: evidencias?.fotoPotenciaPublicId ?? null,
   };
 }
 

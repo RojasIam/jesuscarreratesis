@@ -55,6 +55,14 @@ create table if not exists public.mediciones (
   estado text,
   adjunto_url text,
   adjunto_public_id text,
+  latitud numeric,
+  longitud numeric,
+  foto_timestamp_url text,
+  foto_timestamp_public_id text,
+  foto_otdr_url text,
+  foto_otdr_public_id text,
+  foto_potencia_url text,
+  foto_potencia_public_id text,
   created_at timestamptz not null default now()
 );
 

@@ -46,7 +46,7 @@ export function Modal({
       <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={onClose} aria-hidden />
       <div
         ref={modalRef}
-        className={`relative w-full max-w-4xl rounded-2xl bg-white shadow-theme-xl ${className}`}
+        className={`relative w-full max-w-4xl rounded-xl bg-white shadow-theme-xl ${className}`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

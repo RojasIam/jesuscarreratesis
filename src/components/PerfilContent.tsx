@@ -9,6 +9,7 @@ import Badge from '@/components/ui/badge/Badge';
 import { useAuth } from '@/context/AuthContext';
 import { ROLE_LABELS } from '@/lib/roles';
 import { parseApiResponse } from '@/lib/api-response';
+import { translateUserMessage } from '@/lib/user-messages';
 
 const AVATAR_FOLDER = 'optical-quality/avatars';
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -222,7 +223,7 @@ export default function PerfilContent() {
       setIsEditing(false);
       setSuccess('Perfil actualizado correctamente');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al guardar');
+      setError(err instanceof Error ? translateUserMessage(err.message, 'Error al guardar') : 'Error al guardar');
     } finally {
       setSaving(false);
     }
@@ -231,7 +232,7 @@ export default function PerfilContent() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mx-auto max-w-3xl rounded-2xl border border-gray-200 bg-white shadow-theme-xs"
+      className="mx-auto max-w-3xl rounded-xl border border-gray-200 bg-white shadow-theme-xs"
     >
       <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 lg:px-6">
         <h3 className="text-lg font-semibold text-gray-800">Mi perfil</h3>
