@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { HorizontaLDots } from '@/icons';
 import BrandLogo from '@/components/common/BrandLogo';
 import { useSidebar } from '@/context/SidebarContext';
-import { getNavForRole } from '@/config/optical-nav';
+import { getNavForRole, isNavPathActive } from '@/config/optical-nav';
 import { useAuth } from '@/context/AuthContext';
 import { canCreateMedicion } from '@/lib/roles';
 import SidebarWidget from '@/layout/SidebarWidget';
@@ -16,10 +16,7 @@ export default function AppSidebar() {
   const { role } = useAuth();
   const navItems = getNavForRole(role, canCreateMedicion(role));
 
-  const isActive = (path: string, exact?: boolean) => {
-    if (exact) return pathname === path;
-    return pathname.startsWith(path);
-  };
+  const isActive = (path: string, exact?: boolean) => isNavPathActive(pathname, path, exact);
 
   const showLabels = isExpanded || isHovered;
 

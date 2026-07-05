@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserCircleIcon } from '@/icons';
-import { getNavForRole } from '@/config/optical-nav';
+import { getNavForRole, isNavPathActive } from '@/config/optical-nav';
 import { useAuth } from '@/context/AuthContext';
 import { canCreateMedicion } from '@/lib/roles';
 
@@ -20,10 +20,7 @@ export default function MobileBottomNav() {
   const { role } = useAuth();
   const navItems = [...getNavForRole(role, canCreateMedicion(role)), profileNavItem];
 
-  const isActive = (path: string, exact?: boolean) => {
-    if (exact) return pathname === path;
-    return pathname.startsWith(path);
-  };
+  const isActive = (path: string, exact?: boolean) => isNavPathActive(pathname, path, exact);
 
   return (
     <nav

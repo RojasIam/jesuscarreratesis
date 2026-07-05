@@ -1,10 +1,5 @@
-import MedicionesTabla from '@/components/MedicionesTabla';
-import { AdminGuard } from '@/components/AdminGuard';
+import { redirect } from 'next/navigation';
 
 export default function MedicionesPage() {
-  return (
-    <AdminGuard>
-      <MedicionesTabla variant="full" showNewButton={false} />
-    </AdminGuard>
-  );
+  redirect('/medicion');
 }
