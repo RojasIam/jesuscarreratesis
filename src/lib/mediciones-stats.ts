@@ -1,5 +1,5 @@
 import type { MedicionRow } from '@/lib/database';
-import { BANDA_CHART_COLORS, ESTADO_CHART_COLORS } from '@/lib/chart-colors';
+import { BANDA_CHART_COLORS, ESTADO_CHART_COLORS, PIE_VIVID_PALETTE } from '@/lib/chart-colors';
 
 export const ESTADO_ORDER = ['Excelente', 'Bueno', 'Regular', 'No Conforme'] as const;
 
@@ -63,6 +63,18 @@ export function buildMonthOptions(
   }
 
   return options;
+}
+
+export function buildYearOptions(yearsBack = 5, from = new Date()): number[] {
+  const currentYear = from.getFullYear();
+  return Array.from({ length: yearsBack }, (_, index) => currentYear - index);
+}
+
+export function buildMonthFilterOptions(): { value: number; label: string }[] {
+  return MESES_ES.map((label, index) => ({
+    value: index + 1,
+    label,
+  }));
 }
 
 export function filterMedicionesByMonth(
@@ -162,6 +174,27 @@ export function countByBanda(mediciones: MedicionRow[]): { name: string; value: 
       color: BANDA_COLORS[name] ?? '#64748b',
     }))
     .sort((a, b) => b.value - a.value);
+}
+
+export function countBySede(
+  mediciones: MedicionRow[],
+  limit = 8,
+): { name: string; value: number; color: string }[] {
+  const counts = new Map<string, number>();
+
+  for (const m of mediciones) {
+    const sede = m.sede?.trim() || 'Sin dato';
+    counts.set(sede, (counts.get(sede) ?? 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .map(([name, value], index) => ({
+      name,
+      value,
+      color: PIE_VIVID_PALETTE[index % PIE_VIVID_PALETTE.length],
+    }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, limit);
 }
 
 export function conformidadRate(mediciones: MedicionRow[]): number | null {

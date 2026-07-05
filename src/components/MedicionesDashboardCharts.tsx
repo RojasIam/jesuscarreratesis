@@ -15,10 +15,10 @@ import {
   countByDay,
   countByEstado,
   countByField,
-  buildMonthOptions,
+  countBySede,
+  buildMonthFilterOptions,
+  buildYearOptions,
   getCurrentMonthYear,
-  parseMonthKey,
-  toMonthKey,
 } from '@/lib/mediciones-stats';
 
 const selectClass =
@@ -26,10 +26,10 @@ const selectClass =
 
 export default function MedicionesDashboardCharts() {
   const current = getCurrentMonthYear();
-  const [monthKey, setMonthKey] = useState(() => toMonthKey(current.year, current.month));
-  const monthOptions = useMemo(() => buildMonthOptions(24), []);
-
-  const { year, month } = parseMonthKey(monthKey) ?? current;
+  const [year, setYear] = useState(current.year);
+  const [month, setMonth] = useState(current.month);
+  const yearOptions = useMemo(() => buildYearOptions(5), []);
+  const monthOptions = useMemo(() => buildMonthFilterOptions(), []);
   const [mediciones, setMediciones] = useState<MedicionRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +53,7 @@ export default function MedicionesDashboardCharts() {
     const porTecnico = countByField(mediciones, (m) => m.tecnico_responsable);
     const porDepartamento = countByField(mediciones, (m) => m.departamento);
     const porBanda = countByBanda(mediciones);
+    const porSede = countBySede(mediciones);
     const conformidad = conformidadRate(mediciones);
     const noConformes = mediciones.filter((m) => m.estado === 'No Conforme').length;
     const tecnicosActivos = new Set(mediciones.map((m) => m.tecnico_responsable)).size;
@@ -63,19 +64,32 @@ export default function MedicionesDashboardCharts() {
       porTecnico,
       porDepartamento,
       porBanda,
+      porSede,
       conformidad,
       noConformes,
       tecnicosActivos,
     };
   }, [mediciones, year, month]);
 
-  const monthSelect = (
-    <div className="flex justify-center">
+  const periodFilters = (
+    <div className="flex flex-wrap items-center justify-center gap-3">
       <select
-        aria-label="Periodo"
+        aria-label="Año"
         className={selectClass}
-        value={monthKey}
-        onChange={(e) => setMonthKey(e.target.value)}
+        value={year}
+        onChange={(e) => setYear(Number(e.target.value))}
+      >
+        {yearOptions.map((y) => (
+          <option key={y} value={y}>
+            {y}
+          </option>
+        ))}
+      </select>
+      <select
+        aria-label="Mes"
+        className={`${selectClass} capitalize`}
+        value={month}
+        onChange={(e) => setMonth(Number(e.target.value))}
       >
         {monthOptions.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -89,7 +103,7 @@ export default function MedicionesDashboardCharts() {
   if (error) {
     return (
       <div className="space-y-4 md:space-y-6">
-        {monthSelect}
+        {periodFilters}
         <div className="rounded-xl border border-error-200 bg-error-50 p-6 text-sm text-error-700 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-400">
           {error}
         </div>
@@ -99,7 +113,7 @@ export default function MedicionesDashboardCharts() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {monthSelect}
+      {periodFilters}
 
       <div className={`relative ${loading ? 'pointer-events-none opacity-50' : ''}`}>
         {loading ? (
@@ -163,6 +177,11 @@ export default function MedicionesDashboardCharts() {
           <div className="col-span-12 xl:col-span-6">
             <ChartCard title="Por banda">
               <BandaPieChart data={stats.porBanda} />
+            </ChartCard>
+          </div>
+          <div className="col-span-12 xl:col-span-6">
+            <ChartCard title="Por sede">
+              <BandaPieChart data={stats.porSede} />
             </ChartCard>
           </div>
         </div>

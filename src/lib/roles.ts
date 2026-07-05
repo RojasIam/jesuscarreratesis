@@ -4,6 +4,9 @@ export interface UserProfile {
   id: string;
   email: string;
   full_name: string | null;
+  nombres?: string | null;
+  apellidos?: string | null;
+  phone?: string | null;
   avatar_url?: string | null;
   avatar_public_id?: string | null;
   role: UserRole;

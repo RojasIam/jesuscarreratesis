@@ -1,5 +1,5 @@
 import React from 'react';
-import { GridIcon, TableIcon, DocsIcon } from '@/icons';
+import { GridIcon, TableIcon, DocsIcon, GroupIcon } from '@/icons';
 import type { UserRole } from '@/lib/roles';
 
 export type OpticalNavItem = {
@@ -8,7 +8,7 @@ export type OpticalNavItem = {
   path: string;
   icon: React.ReactNode;
   exact?: boolean;
-  roles?: 'all' | 'canCreate';
+  roles?: 'all' | 'canCreate' | 'admin';
 };
 
 export const opticalNavItems: OpticalNavItem[] = [
@@ -20,12 +20,20 @@ export const opticalNavItems: OpticalNavItem[] = [
     icon: <TableIcon />,
     roles: 'canCreate',
   },
+  {
+    name: 'Usuarios',
+    shortName: 'Usuarios',
+    path: '/usuarios',
+    icon: <GroupIcon />,
+    roles: 'admin',
+  },
   { name: 'Fórmulas', shortName: 'Fórmulas', path: '/formulas', icon: <DocsIcon />, roles: 'all' },
 ];
 
 export function getNavForRole(role: UserRole | null, canCreate: boolean): OpticalNavItem[] {
   return opticalNavItems.filter((item) => {
     if (item.roles === 'all') return true;
+    if (item.roles === 'admin') return role === 'admin';
     return canCreate;
   });
 }

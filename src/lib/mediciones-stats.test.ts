@@ -4,10 +4,13 @@ import {
   countByDay,
   countByEstado,
   countByField,
+  countBySede,
   conformidadRate,
   filterMedicionesByMonth,
   formatMesAnio,
   buildMonthOptions,
+  buildMonthFilterOptions,
+  buildYearOptions,
   parseMonthKey,
   toMonthKey,
 } from '@/lib/mediciones-stats';
@@ -80,6 +83,14 @@ describe('mediciones-stats', () => {
     expect(tecnicos).toHaveLength(2);
   });
 
+  it('cuenta por sede', () => {
+    const julio = filterMedicionesByMonth(mediciones, 2026, 7);
+    const sedes = countBySede(julio);
+    expect(sedes).toHaveLength(1);
+    expect(sedes[0]?.name).toBe('Sede A');
+    expect(sedes[0]?.value).toBe(2);
+  });
+
   it('calcula tasa de conformidad', () => {
     expect(conformidadRate(mediciones)).toBe(67);
     expect(conformidadRate([])).toBeNull();
@@ -96,5 +107,14 @@ describe('mediciones-stats', () => {
     expect(options).toHaveLength(3);
     expect(options[0]?.value).toBe('2026-07');
     expect(options[0]?.label).toBe('julio 2026');
+  });
+
+  it('genera opciones separadas de año y mes', () => {
+    const years = buildYearOptions(3, new Date(2026, 6, 15));
+    expect(years).toEqual([2026, 2025, 2024]);
+
+    const months = buildMonthFilterOptions();
+    expect(months).toHaveLength(12);
+    expect(months[6]).toEqual({ value: 7, label: 'julio' });
   });
 });
