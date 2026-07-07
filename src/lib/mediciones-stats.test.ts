@@ -45,6 +45,8 @@ function mockMedicion(overrides: Partial<MedicionRow> & { created_at: string }):
     foto_timestamp_public_id: null,
     foto_otdr_url: null,
     foto_otdr_public_id: null,
+    fotos_otdr_urls: null,
+    fotos_otdr_public_ids: null,
     foto_potencia_url: null,
     foto_potencia_public_id: null,
     ...overrides,

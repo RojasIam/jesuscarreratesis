@@ -8,7 +8,8 @@ import Badge from '@/components/ui/badge/Badge';
 import Button from '@/components/ui/button/Button';
 import { PlusIcon } from '@/icons';
 import type { MedicionRow } from '@/lib/database';
-import { EvidenciaArchivoCell, EvidenciaMapaCell } from '@/components/EvidenciaPreviewCell';
+import { EvidenciaArchivoCell, EvidenciaArchivoMultiCell, EvidenciaMapaCell } from '@/components/EvidenciaPreviewCell';
+import { getFotosOtdrUrls } from '@/lib/evidencias';
 import { UI } from '@/lib/user-messages';
 import { useAuth } from '@/context/AuthContext';
 import MedicionesTablaFiltros from '@/components/MedicionesTablaFiltros';
@@ -182,11 +183,25 @@ function buildMedicionesColumns(isFull: boolean, viewAll: boolean): ColumnDef<Me
         ),
       },
       {
-        id: 'foto_timestamp',
-        header: UI.photoTimestamp,
+        id: 'foto_potencia_nodo',
+        header: UI.evidencePotenciaNodo,
         enableSorting: false,
         cell: ({ row }) => (
-          <EvidenciaArchivoCell url={row.original.foto_timestamp_url} title={UI.photoTimestamp} />
+          <EvidenciaArchivoCell
+            url={row.original.foto_timestamp_url}
+            title={UI.photoPotenciaNodo}
+          />
+        ),
+      },
+      {
+        id: 'foto_potencia_cliente',
+        header: UI.evidencePotenciaCliente,
+        enableSorting: false,
+        cell: ({ row }) => (
+          <EvidenciaArchivoCell
+            url={row.original.foto_potencia_url}
+            title={UI.photoPotenciaCliente}
+          />
         ),
       },
       {
@@ -194,15 +209,10 @@ function buildMedicionesColumns(isFull: boolean, viewAll: boolean): ColumnDef<Me
         header: UI.evidenceOtdr,
         enableSorting: false,
         cell: ({ row }) => (
-          <EvidenciaArchivoCell url={row.original.foto_otdr_url} title={UI.photoOtdr} />
-        ),
-      },
-      {
-        id: 'foto_potencia',
-        header: UI.evidencePower,
-        enableSorting: false,
-        cell: ({ row }) => (
-          <EvidenciaArchivoCell url={row.original.foto_potencia_url} title={UI.photoPower} />
+          <EvidenciaArchivoMultiCell
+            urls={getFotosOtdrUrls(row.original)}
+            title={UI.photoOtdr}
+          />
         ),
       },
       {

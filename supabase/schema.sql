@@ -64,6 +64,8 @@ create table if not exists public.mediciones (
   foto_timestamp_public_id text,
   foto_otdr_url text,
   foto_otdr_public_id text,
+  fotos_otdr_urls text[],
+  fotos_otdr_public_ids text[],
   foto_potencia_url text,
   foto_potencia_public_id text,
   created_at timestamptz not null default now()

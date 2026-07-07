@@ -6,9 +6,11 @@ import { ChevronLeftIcon } from '@/icons';
 import Badge from '@/components/ui/badge/Badge';
 import {
   EvidenciaDetalleFoto,
+  EvidenciaDetalleFotosMulti,
   EvidenciaMapaDetalle,
 } from '@/components/EvidenciaPreviewCell';
 import type { MedicionRow } from '@/lib/database';
+import { getFotosOtdrUrls } from '@/lib/evidencias';
 import { googleMapsUrl } from '@/hooks/useGeolocation';
 import { useAuth } from '@/context/AuthContext';
 import { canViewAllMediciones } from '@/lib/roles';
@@ -219,9 +221,18 @@ export default function MedicionDetalleContent({ id }: { id: string }) {
 
           <DetalleSeccion titulo="Evidencias" tone="violet">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-1">
-              <EvidenciaDetalleFoto url={medicion.foto_timestamp_url} title={UI.photoTimestamp} />
-              <EvidenciaDetalleFoto url={medicion.foto_otdr_url} title={UI.photoOtdr} />
-              <EvidenciaDetalleFoto url={medicion.foto_potencia_url} title={UI.photoPower} />
+              <EvidenciaDetalleFoto
+                url={medicion.foto_timestamp_url}
+                title={UI.photoPotenciaNodo}
+              />
+              <EvidenciaDetalleFoto
+                url={medicion.foto_potencia_url}
+                title={UI.photoPotenciaCliente}
+              />
+              <EvidenciaDetalleFotosMulti
+                urls={getFotosOtdrUrls(medicion)}
+                title={UI.photoOtdr}
+              />
               <EvidenciaMapaDetalle latitud={medicion.latitud} longitud={medicion.longitud} />
             </div>
             {medicion.adjunto_url && (

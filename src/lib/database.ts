@@ -29,6 +29,8 @@ export interface MedicionRow {
   foto_timestamp_public_id: string | null;
   foto_otdr_url: string | null;
   foto_otdr_public_id: string | null;
+  fotos_otdr_urls: string[] | null;
+  fotos_otdr_public_ids: string[] | null;
   foto_potencia_url: string | null;
   foto_potencia_public_id: string | null;
   created_at: string;
@@ -42,12 +44,12 @@ export interface MedicionRow {
 export interface MedicionEvidencias {
   latitud: number | null;
   longitud: number | null;
-  fotoTimestampUrl?: string | null;
-  fotoTimestampPublicId?: string | null;
-  fotoOtdrUrl?: string | null;
-  fotoOtdrPublicId?: string | null;
-  fotoPotenciaUrl?: string | null;
-  fotoPotenciaPublicId?: string | null;
+  fotoPotenciaNodoUrl?: string | null;
+  fotoPotenciaNodoPublicId?: string | null;
+  fotoPotenciaClienteUrl?: string | null;
+  fotoPotenciaClientePublicId?: string | null;
+  fotosOtdrUrls?: string[];
+  fotosOtdrPublicIds?: string[];
 }
 
 export interface MedicionPayload {
@@ -90,12 +92,16 @@ export function formDataToDbRow(
     adjunto_public_id: adjuntoPublicId ?? null,
     latitud: evidencias?.latitud ?? null,
     longitud: evidencias?.longitud ?? null,
-    foto_timestamp_url: evidencias?.fotoTimestampUrl ?? null,
-    foto_timestamp_public_id: evidencias?.fotoTimestampPublicId ?? null,
-    foto_otdr_url: evidencias?.fotoOtdrUrl ?? null,
-    foto_otdr_public_id: evidencias?.fotoOtdrPublicId ?? null,
-    foto_potencia_url: evidencias?.fotoPotenciaUrl ?? null,
-    foto_potencia_public_id: evidencias?.fotoPotenciaPublicId ?? null,
+    foto_timestamp_url: evidencias?.fotoPotenciaNodoUrl ?? null,
+    foto_timestamp_public_id: evidencias?.fotoPotenciaNodoPublicId ?? null,
+    foto_otdr_url: evidencias?.fotosOtdrUrls?.[0] ?? null,
+    foto_otdr_public_id: evidencias?.fotosOtdrPublicIds?.[0] ?? null,
+    fotos_otdr_urls: evidencias?.fotosOtdrUrls?.length ? evidencias.fotosOtdrUrls : null,
+    fotos_otdr_public_ids: evidencias?.fotosOtdrPublicIds?.length
+      ? evidencias.fotosOtdrPublicIds
+      : null,
+    foto_potencia_url: evidencias?.fotoPotenciaClienteUrl ?? null,
+    foto_potencia_public_id: evidencias?.fotoPotenciaClientePublicId ?? null,
   };
 }
 

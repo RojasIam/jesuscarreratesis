@@ -33,6 +33,13 @@ function parseNumber(value: string | number | ''): number | '' {
   return isNaN(numValue) ? '' : numValue;
 }
 
+/** Teclados móviles no muestran "-" con inputmode decimal/numeric; text permite dBm negativos. */
+const signedDbmInputProps = {
+  type: 'text' as const,
+  inputMode: 'text' as const,
+  autoComplete: 'off' as const,
+};
+
 function getFieldColors(name: string, value: string | number | '') {
   if (value === '' || value === '-') {
     return { backgroundColor: '', borderColor: '' };
@@ -175,18 +182,26 @@ export default function FormularioMedicion({
 
     try {
       const uploadFolder = 'optical-quality/mediciones';
+      const otdrStamp = Date.now();
 
-      const [timestampUp, otdrUp, potenciaUp] = await Promise.all([
-        evidenciasFiles.fotoTimestamp
-          ? uploadFile(evidenciasFiles.fotoTimestamp, `${uploadFolder}/timestamp`)
+      const [potenciaNodoUp, potenciaClienteUp, ...otdrUploads] = await Promise.all([
+        evidenciasFiles.fotoPotenciaNodo
+          ? uploadFile(evidenciasFiles.fotoPotenciaNodo, `${uploadFolder}/potencia-nodo`)
           : Promise.resolve(null),
-        evidenciasFiles.fotoOtdr
-          ? uploadFile(evidenciasFiles.fotoOtdr, `${uploadFolder}/otdr`)
+        evidenciasFiles.fotoPotenciaCliente
+          ? uploadFile(evidenciasFiles.fotoPotenciaCliente, `${uploadFolder}/potencia-cliente`)
           : Promise.resolve(null),
-        evidenciasFiles.fotoPotencia
-          ? uploadFile(evidenciasFiles.fotoPotencia, `${uploadFolder}/potencia`)
-          : Promise.resolve(null),
+        ...evidenciasFiles.fotosOtdr.map((file, index) =>
+          uploadFile(file, `${uploadFolder}/otdr/${otdrStamp}-${index}`),
+        ),
       ]);
+
+      const fotosOtdrUrls = otdrUploads
+        .map((upload) => upload?.url)
+        .filter((url): url is string => Boolean(url));
+      const fotosOtdrPublicIds = otdrUploads
+        .map((upload) => upload?.publicId)
+        .filter((id): id is string => Boolean(id));
 
       const res = await fetch('/api/mediciones', {
         method: 'POST',
@@ -199,12 +214,12 @@ export default function FormularioMedicion({
           evidencias: {
             latitud: coords?.lat ?? null,
             longitud: coords?.lng ?? null,
-            fotoTimestampUrl: timestampUp?.url ?? null,
-            fotoTimestampPublicId: timestampUp?.publicId ?? null,
-            fotoOtdrUrl: otdrUp?.url ?? null,
-            fotoOtdrPublicId: otdrUp?.publicId ?? null,
-            fotoPotenciaUrl: potenciaUp?.url ?? null,
-            fotoPotenciaPublicId: potenciaUp?.publicId ?? null,
+            fotoPotenciaNodoUrl: potenciaNodoUp?.url ?? null,
+            fotoPotenciaNodoPublicId: potenciaNodoUp?.publicId ?? null,
+            fotoPotenciaClienteUrl: potenciaClienteUp?.url ?? null,
+            fotoPotenciaClientePublicId: potenciaClienteUp?.publicId ?? null,
+            fotosOtdrUrls,
+            fotosOtdrPublicIds,
           },
         }),
       });
@@ -387,7 +402,7 @@ export default function FormularioMedicion({
                 value={formData.potenciaSiteNodo === '' ? '' : String(formData.potenciaSiteNodo)}
                 onChange={(e) => handleChange('potenciaSiteNodo', e.target.value)}
                 placeholder="Ej: -7.5"
-                inputMode="decimal"
+                {...signedDbmInputProps}
               />
             </Field>
             <Field label="Número de empalmes *">
@@ -423,7 +438,7 @@ export default function FormularioMedicion({
                 value={formData.potenciaRecibidaRoseta === '' ? '' : String(formData.potenciaRecibidaRoseta)}
                 onChange={(e) => handleChange('potenciaRecibidaRoseta', e.target.value)}
                 placeholder="Ej: -13.20"
-                inputMode="decimal"
+                {...signedDbmInputProps}
               />
             </Field>
           </div>

@@ -6,7 +6,9 @@ import { UI } from '@/lib/user-messages';
 interface FileInputProps {
   className?: string;
   accept?: string;
+  multiple?: boolean;
   fileName?: string | null;
+  fileNames?: string[];
   chooseLabel?: string;
   emptyLabel?: string;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -15,12 +17,20 @@ interface FileInputProps {
 const FileInput: FC<FileInputProps> = ({
   className,
   accept,
+  multiple = false,
   fileName,
+  fileNames,
   chooseLabel = UI.chooseFile,
   emptyLabel = UI.noFile,
   onChange,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const displayName =
+    fileNames && fileNames.length > 0
+      ? fileNames.length === 1
+        ? fileNames[0]
+        : `${fileNames.length} archivos`
+      : fileName || emptyLabel;
 
   return (
     <div
@@ -30,6 +40,7 @@ const FileInput: FC<FileInputProps> = ({
         ref={inputRef}
         type="file"
         accept={accept}
+        multiple={multiple}
         className="sr-only"
         onChange={onChange}
       />
@@ -41,7 +52,7 @@ const FileInput: FC<FileInputProps> = ({
         {chooseLabel}
       </button>
       <span className="min-w-0 flex-1 truncate px-3 text-sm text-gray-500 dark:text-gray-400">
-        {fileName || emptyLabel}
+        {displayName}
       </span>
     </div>
   );

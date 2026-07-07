@@ -8,18 +8,19 @@ import {
   type GeolocationCoords,
   type GeolocationStatus,
 } from '@/hooks/useGeolocation';
+import { MAX_FOTOS_OTDR } from '@/lib/evidencias';
 import { UI } from '@/lib/user-messages';
 
 export type EvidenciasFiles = {
-  fotoTimestamp: File | null;
-  fotoOtdr: File | null;
-  fotoPotencia: File | null;
+  fotoPotenciaNodo: File | null;
+  fotoPotenciaCliente: File | null;
+  fotosOtdr: File[];
 };
 
 export const initialEvidenciasFiles: EvidenciasFiles = {
-  fotoTimestamp: null,
-  fotoOtdr: null,
-  fotoPotencia: null,
+  fotoPotenciaNodo: null,
+  fotoPotenciaCliente: null,
+  fotosOtdr: [],
 };
 
 type EvidenciasSectionProps = {
@@ -41,8 +42,21 @@ export default function EvidenciasSection({
   onRequestLocation,
   geoLoading,
 }: EvidenciasSectionProps) {
-  const setFile = (key: keyof EvidenciasFiles, file: File | null) => {
+  const setSingleFile = (key: 'fotoPotenciaNodo' | 'fotoPotenciaCliente', file: File | null) => {
     onFilesChange({ ...files, [key]: file });
+  };
+
+  const addOtdrFiles = (incoming: FileList | null) => {
+    if (!incoming?.length) return;
+    const merged = [...files.fotosOtdr, ...Array.from(incoming)].slice(0, MAX_FOTOS_OTDR);
+    onFilesChange({ ...files, fotosOtdr: merged });
+  };
+
+  const removeOtdrFile = (index: number) => {
+    onFilesChange({
+      ...files,
+      fotosOtdr: files.fotosOtdr.filter((_, i) => i !== index),
+    });
   };
 
   return (
@@ -117,20 +131,51 @@ export default function EvidenciasSection({
 
       <div className="grid gap-4 sm:grid-cols-3">
         <EvidenciaFileField
-          label={UI.photoTimestamp}
-          file={files.fotoTimestamp}
-          onChange={(f) => setFile('fotoTimestamp', f)}
+          label={UI.photoPotenciaNodo}
+          file={files.fotoPotenciaNodo}
+          onChange={(f) => setSingleFile('fotoPotenciaNodo', f)}
         />
         <EvidenciaFileField
-          label={UI.photoOtdr}
-          file={files.fotoOtdr}
-          onChange={(f) => setFile('fotoOtdr', f)}
+          label={UI.photoPotenciaCliente}
+          file={files.fotoPotenciaCliente}
+          onChange={(f) => setSingleFile('fotoPotenciaCliente', f)}
         />
-        <EvidenciaFileField
-          label={UI.photoPower}
-          file={files.fotoPotencia}
-          onChange={(f) => setFile('fotoPotencia', f)}
-        />
+        <div className="flex w-full min-w-0 flex-col">
+          <Label>{UI.photoOtdr}</Label>
+          <FileInput
+            accept="image/*"
+            multiple
+            chooseLabel={files.fotosOtdr.length >= MAX_FOTOS_OTDR ? 'Máximo' : UI.chooseFile}
+            fileNames={files.fotosOtdr.map((file) => file.name)}
+            onChange={(e) => {
+              if (files.fotosOtdr.length >= MAX_FOTOS_OTDR) return;
+              addOtdrFiles(e.target.files);
+              e.target.value = '';
+            }}
+          />
+          <p className="mt-1.5 text-theme-xs text-gray-500">
+            Hasta {MAX_FOTOS_OTDR} fotos ({files.fotosOtdr.length}/{MAX_FOTOS_OTDR})
+          </p>
+          {files.fotosOtdr.length > 0 ? (
+            <ul className="mt-2 space-y-1">
+              {files.fotosOtdr.map((file, index) => (
+                <li
+                  key={`${file.name}-${index}`}
+                  className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5 text-theme-xs text-gray-700"
+                >
+                  <span className="min-w-0 truncate">{file.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeOtdrFile(index)}
+                    className="shrink-0 font-medium text-error-600 hover:text-error-700"
+                  >
+                    Quitar
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       </div>
     </div>
   );
