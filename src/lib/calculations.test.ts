@@ -4,6 +4,7 @@ import {
   calculateILMax,
   calculateILReal,
   evaluateStatus,
+  getMedicionRecomendaciones,
   getPowerColors,
   getEmpalmeColors,
   getConectorColors,
@@ -154,6 +155,20 @@ describe('evaluateStatus', () => {
     expect(ilReal).toBeCloseTo(6.7, 1);
     expect(ilMaxCalc).toBeCloseTo(3.75, 1);
     expect(evaluateStatus(ilReal, ilMaxCalc).estado).toBe('No Conforme');
+  });
+});
+
+describe('getMedicionRecomendaciones', () => {
+  it('devuelve recomendaciones según el estado', () => {
+    expect(getMedicionRecomendaciones('Excelente')[0]).toBe('Enlace óptico en condiciones óptimas.');
+    expect(getMedicionRecomendaciones('Bueno')).toHaveLength(2);
+    expect(getMedicionRecomendaciones('Regular')[1]).toContain('empalmes');
+    expect(getMedicionRecomendaciones('No Conforme')[1]).toContain('OTDR');
+  });
+
+  it('devuelve arreglo vacío para estado desconocido', () => {
+    expect(getMedicionRecomendaciones(null)).toEqual([]);
+    expect(getMedicionRecomendaciones('Otro')).toEqual([]);
   });
 });
 

@@ -52,8 +52,10 @@ export function calculateILReal(
   return Math.abs(ptx - prx);
 }
 
+export type MedicionEstado = 'Excelente' | 'Bueno' | 'Regular' | 'No Conforme';
+
 export function evaluateStatus(ilReal: number, ilMax: number): {
-  estado: 'Excelente' | 'Bueno' | 'Regular' | 'No Conforme';
+  estado: MedicionEstado;
   backgroundColor: string;
   borderColor: string;
 } {
@@ -67,6 +69,33 @@ export function evaluateStatus(ilReal: number, ilMax: number): {
     return { estado: 'Regular', backgroundColor: '#fef3c7', borderColor: '#eab308' };
   }
   return { estado: 'No Conforme', backgroundColor: '#fee2e2', borderColor: '#ef4444' };
+}
+
+export const MEDICION_RECOMENDACIONES: Record<MedicionEstado, string[]> = {
+  Excelente: [
+    'Enlace óptico en condiciones óptimas.',
+    'No se requieren acciones correctivas.',
+    'Mantener monitoreo preventivo.',
+  ],
+  Bueno: [
+    'Enlace dentro de parámetros aceptables.',
+    'Realizar monitoreo periódico y revisión preventiva.',
+  ],
+  Regular: [
+    'Enlace cercano al límite máximo permitido.',
+    'Revisar empalmes, conectores, curvaturas y eventos reflectométricos.',
+  ],
+  'No Conforme': [
+    'La pérdida real supera el límite permitido.',
+    'Revisar empalmes, conectores, roseta, patch cord, curvaturas y eventos OTDR.',
+  ],
+};
+
+export function getMedicionRecomendaciones(
+  estado: MedicionEstado | string | null | undefined,
+): string[] {
+  if (!estado || !(estado in MEDICION_RECOMENDACIONES)) return [];
+  return MEDICION_RECOMENDACIONES[estado as MedicionEstado];
 }
 
 export function getPowerColors(value: number) {

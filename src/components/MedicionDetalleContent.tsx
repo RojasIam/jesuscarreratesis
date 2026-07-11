@@ -9,6 +9,7 @@ import {
   EvidenciaDetalleFotosMulti,
   EvidenciaMapaDetalle,
 } from '@/components/EvidenciaPreviewCell';
+import MedicionRecomendaciones from '@/components/MedicionRecomendaciones';
 import type { MedicionRow } from '@/lib/database';
 import { getFotosOtdrUrls } from '@/lib/evidencias';
 import { googleMapsUrl } from '@/hooks/useGeolocation';
@@ -217,6 +218,9 @@ export default function MedicionDetalleContent({ id }: { id: string }) {
               <DetalleCampo label="IL_REAL (dB)" value={num(medicion.il_real)} />
               <DetalleCampo label="Estado" value={medicion.estado} />
             </dl>
+            <div className="mt-4">
+              <MedicionRecomendaciones estado={medicion.estado} />
+            </div>
           </DetalleSeccion>
 
           <DetalleSeccion titulo="Evidencias" tone="violet">

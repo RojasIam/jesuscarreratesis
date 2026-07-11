@@ -10,6 +10,7 @@ import EvidenciasSection, {
   initialEvidenciasFiles,
   type EvidenciasFiles,
 } from '@/components/EvidenciasSection';
+import MedicionRecomendaciones from '@/components/MedicionRecomendaciones';
 import { BoltIcon, PieChartIcon, CheckCircleIcon } from '@/icons';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { uploadFile } from '@/lib/upload-client';
@@ -33,8 +34,8 @@ function parseNumber(value: string | number | ''): number | '' {
   return isNaN(numValue) ? '' : numValue;
 }
 
-/** Teclados móviles no muestran "-" con inputmode decimal/numeric; text permite dBm negativos. */
-const signedDbmInputProps = {
+/** Teclados móviles no muestran "-" con inputmode decimal/numeric; text permite decimales negativos. */
+const signedDecimalInputProps = {
   type: 'text' as const,
   inputMode: 'text' as const,
   autoComplete: 'off' as const,
@@ -402,7 +403,7 @@ export default function FormularioMedicion({
                 value={formData.potenciaSiteNodo === '' ? '' : String(formData.potenciaSiteNodo)}
                 onChange={(e) => handleChange('potenciaSiteNodo', e.target.value)}
                 placeholder="Ej: -7.5"
-                {...signedDbmInputProps}
+                {...signedDecimalInputProps}
               />
             </Field>
             <Field label="Número de empalmes *">
@@ -438,7 +439,7 @@ export default function FormularioMedicion({
                 value={formData.potenciaRecibidaRoseta === '' ? '' : String(formData.potenciaRecibidaRoseta)}
                 onChange={(e) => handleChange('potenciaRecibidaRoseta', e.target.value)}
                 placeholder="Ej: -13.20"
-                {...signedDbmInputProps}
+                {...signedDecimalInputProps}
               />
             </Field>
           </div>
@@ -473,7 +474,7 @@ export default function FormularioMedicion({
                 value={formData.reflectancia === '' ? '' : String(formData.reflectancia)}
                 onChange={(e) => handleChange('reflectancia', e.target.value)}
                 placeholder="Decimal (negativo)"
-                inputMode="decimal"
+                {...signedDecimalInputProps}
               />
             </Field>
           </div>
@@ -504,6 +505,7 @@ export default function FormularioMedicion({
               </div>
             </Field>
           </div>
+          {estado ? <MedicionRecomendaciones estado={estado.estado} /> : null}
         </ComponentCard>
 
         <ComponentCard title="5. Evidencias técnicas (opcional)">
